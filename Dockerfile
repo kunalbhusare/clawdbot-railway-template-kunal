@@ -75,6 +75,9 @@ WORKDIR /app
 COPY package.json ./
 RUN npm install --omit=dev && npm cache clean --force
 
+# Install pm2 for ClawLifeOS notification daemon
+RUN npm install -g pm2
+
 # Copy built openclaw
 COPY --from=openclaw-build /openclaw /openclaw
 
@@ -84,8 +87,12 @@ RUN printf '%s\n' '#!/usr/bin/env bash' 'exec node /openclaw/dist/entry.js "$@"'
 
 COPY src ./src
 
+# ClawLifeOS: bake in skills and startup script
+COPY clawlifeos ./clawlifeos
+COPY entrypoint.sh ./entrypoint.sh
+
 # The wrapper listens on this port.
 ENV OPENCLAW_PUBLIC_PORT=8080
 ENV PORT=8080
 EXPOSE 8080
-CMD ["node", "src/server.js"]
+CMD ["bash", "entrypoint.sh"]
