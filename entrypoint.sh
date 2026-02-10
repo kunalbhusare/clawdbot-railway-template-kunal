@@ -11,12 +11,16 @@ if [ -d /app/clawlifeos/skills ]; then
   echo "[entrypoint] Skills installed to /root/.openclaw/skills/"
 fi
 
-# 2. Start notification daemon via pm2 (if ecosystem config exists on persistent volume)
-if [ -f /data/clawlifeos/ecosystem.config.js ]; then
+# 2. Start Linear webhook receiver via pm2
+#    Uses baked-in ecosystem config (from /app/clawlifeos/) or persistent one (from /data/clawlifeos/)
+if [ -f /app/clawlifeos/ecosystem.config.js ]; then
+  pm2 start /app/clawlifeos/ecosystem.config.js --silent
+  echo "[entrypoint] Linear webhook receiver started via pm2 (baked-in config)"
+elif [ -f /data/clawlifeos/ecosystem.config.js ]; then
   pm2 start /data/clawlifeos/ecosystem.config.js --silent
-  echo "[entrypoint] Notification daemon started via pm2"
+  echo "[entrypoint] Linear webhook receiver started via pm2 (persistent config)"
 else
-  echo "[entrypoint] No /data/clawlifeos/ecosystem.config.js found, skipping pm2"
+  echo "[entrypoint] No ecosystem.config.js found, skipping pm2"
 fi
 
 # 3. Start the main OpenClaw wrapper server
