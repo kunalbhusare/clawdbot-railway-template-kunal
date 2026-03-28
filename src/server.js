@@ -92,12 +92,13 @@ const INTERNAL_GATEWAY_PORT = Number.parseInt(process.env.INTERNAL_GATEWAY_PORT 
 const INTERNAL_GATEWAY_HOST = process.env.INTERNAL_GATEWAY_HOST ?? "127.0.0.1";
 const GATEWAY_TARGET = `http://${INTERNAL_GATEWAY_HOST}:${INTERNAL_GATEWAY_PORT}`;
 
-// Always run the built-from-source CLI entry directly to avoid PATH/global-install mismatches.
-const OPENCLAW_ENTRY = process.env.OPENCLAW_ENTRY?.trim() || "/openclaw/dist/entry.js";
-const OPENCLAW_NODE = process.env.OPENCLAW_NODE?.trim() || "node";
+// Use the openclaw CLI binary (already in PATH from the official Docker image).
+// Falls back to the legacy node + entry.js approach if OPENCLAW_ENTRY is set explicitly.
+const OPENCLAW_ENTRY = process.env.OPENCLAW_ENTRY?.trim() || "";
+const OPENCLAW_NODE = process.env.OPENCLAW_NODE?.trim() || (OPENCLAW_ENTRY ? "node" : "openclaw");
 
 function clawArgs(args) {
-  return [OPENCLAW_ENTRY, ...args];
+  return OPENCLAW_ENTRY ? [OPENCLAW_ENTRY, ...args] : args;
 }
 
 function configPath() {
