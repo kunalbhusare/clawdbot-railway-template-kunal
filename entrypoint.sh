@@ -14,10 +14,10 @@ fi
 # 2. Start Linear webhook receiver via pm2
 #    Uses baked-in ecosystem config (from /app/clawlifeos/) or persistent one (from /data/clawlifeos/)
 if [ -f /app/clawlifeos/ecosystem.config.js ]; then
-  pm2 start /app/clawlifeos/ecosystem.config.js --silent
+  pm2 start /app/clawlifeos/ecosystem.config.js --silent || echo "[entrypoint] WARN: pm2 start failed (baked-in config)"
   echo "[entrypoint] Linear webhook receiver started via pm2 (baked-in config)"
 elif [ -f /data/clawlifeos/ecosystem.config.js ]; then
-  pm2 start /data/clawlifeos/ecosystem.config.js --silent
+  pm2 start /data/clawlifeos/ecosystem.config.js --silent || echo "[entrypoint] WARN: pm2 start failed (persistent config)"
   echo "[entrypoint] Linear webhook receiver started via pm2 (persistent config)"
 else
   echo "[entrypoint] No ecosystem.config.js found, skipping pm2"
