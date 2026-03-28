@@ -166,8 +166,12 @@ async function startGateway() {
   if (publicDomain) {
     const originsResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.controlUi.allowedOrigins", JSON.stringify([`https://${publicDomain}`])]));
     console.log(`[gateway] config set allowedOrigins: code=${originsResult.code} ${originsResult.output.trim()}`);
-    const proxiesResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.trustedProxies", JSON.stringify(["100.64.0.0/10", "10.0.0.0/8"])]));
+    const proxiesResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.trustedProxies", JSON.stringify(["127.0.0.1", "100.64.0.0/10", "10.0.0.0/8"])]));
     console.log(`[gateway] config set trustedProxies: code=${proxiesResult.code} ${proxiesResult.output.trim()}`);
+
+    // Disable device pairing for headless Railway deployment (no local device to approve).
+    const deviceAuthResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "gateway.controlUi.dangerouslyDisableDeviceAuth", "true"]));
+    console.log(`[gateway] config set dangerouslyDisableDeviceAuth: code=${deviceAuthResult.code} ${deviceAuthResult.output.trim()}`);
   }
 
   // Persist the auth token in the config file so it matches the CLI --token arg.

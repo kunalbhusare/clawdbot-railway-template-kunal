@@ -32,9 +32,10 @@ RUN set -eux; \
     sed -i -E 's/"openclaw"[[:space:]]*:[[:space:]]*"workspace:[^"]+"/\"openclaw\": \"*\"/g' "$f"; \
   done
 
+# Hoist all deps to a single root node_modules to prevent duplicate matrix-js-sdk
+# instances across extensions, which triggers "Multiple matrix-js-sdk entrypoints detected!" at runtime.
+RUN echo 'shamefully-hoist=true' >> .npmrc
 RUN pnpm install --no-frozen-lockfile
-# Deduplicate matrix-js-sdk (and other shared deps) so extensions don't each
-# bundle their own copy, which triggers "Multiple matrix-js-sdk entrypoints detected!" at runtime.
 RUN pnpm dedupe
 RUN pnpm build
 ENV OPENCLAW_PREFER_PNPM=1
