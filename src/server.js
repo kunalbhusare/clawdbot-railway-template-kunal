@@ -183,6 +183,11 @@ async function startGateway() {
   const tokenResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "gateway.auth.token", OPENCLAW_GATEWAY_TOKEN]));
   console.log(`[gateway] config set auth.token: code=${tokenResult.code} ${tokenResult.output.trim()}`);
 
+  // Reset context engine to "legacy" if a custom engine (e.g. lossless-claw) is configured
+  // but not available in the official image. Prevents "Context engine X is not registered" errors.
+  const ceResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "plugins.slots.contextEngine", "legacy"]));
+  console.log(`[gateway] config set contextEngine: code=${ceResult.code} ${ceResult.output.trim()}`);
+
   const args = [
     "gateway",
     "run",
