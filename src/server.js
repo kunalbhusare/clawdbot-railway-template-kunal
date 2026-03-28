@@ -153,6 +153,14 @@ async function startGateway() {
   fs.mkdirSync(STATE_DIR, { recursive: true });
   fs.mkdirSync(WORKSPACE_DIR, { recursive: true });
 
+  // Auto-fix config issues before starting the gateway to prevent crash loops.
+  const doctorResult = await runCmd(OPENCLAW_NODE, clawArgs(["doctor", "--fix"]));
+  if (doctorResult.code !== 0) {
+    console.warn(`[gateway] openclaw doctor --fix exited with code ${doctorResult.code}:\n${doctorResult.output}`);
+  } else {
+    console.log("[gateway] openclaw doctor --fix passed");
+  }
+
   // Ensure WebSocket origins and trusted proxies are configured before every gateway start.
   const publicDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
   if (publicDomain) {
