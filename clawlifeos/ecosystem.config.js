@@ -5,7 +5,7 @@
 module.exports = {
   apps: [{
     name: 'claw-linear-webhook',
-    script: '/app/clawlifeos/linear-webhook.js',
+    script: '/wrapper/clawlifeos/linear-webhook.js',
     env: {
       LINEAR_WEBHOOK_PORT: 3100,
     },
