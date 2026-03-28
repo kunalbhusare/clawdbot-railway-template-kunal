@@ -33,6 +33,9 @@ RUN set -eux; \
   done
 
 RUN pnpm install --no-frozen-lockfile
+# Deduplicate matrix-js-sdk (and other shared deps) so extensions don't each
+# bundle their own copy, which triggers "Multiple matrix-js-sdk entrypoints detected!" at runtime.
+RUN pnpm dedupe
 RUN pnpm build
 ENV OPENCLAW_PREFER_PNPM=1
 RUN pnpm ui:install && pnpm ui:build

@@ -161,12 +161,18 @@ async function startGateway() {
     console.log("[gateway] openclaw doctor --fix passed");
   }
 
-  // Ensure WebSocket origins and trusted proxies are configured before every gateway start.
+  // Ensure WebSocket origins, trusted proxies, and auth token are configured before every gateway start.
   const publicDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
   if (publicDomain) {
-    await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.controlUi.allowedOrigins", JSON.stringify([`https://${publicDomain}`])]));
-    await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.trustedProxies", JSON.stringify(["100.64.0.0/10", "10.0.0.0/8"])]));
+    const originsResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.controlUi.allowedOrigins", JSON.stringify([`https://${publicDomain}`])]));
+    console.log(`[gateway] config set allowedOrigins: code=${originsResult.code} ${originsResult.output.trim()}`);
+    const proxiesResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.trustedProxies", JSON.stringify(["100.64.0.0/10", "10.0.0.0/8"])]));
+    console.log(`[gateway] config set trustedProxies: code=${proxiesResult.code} ${proxiesResult.output.trim()}`);
   }
+
+  // Persist the auth token in the config file so it matches the CLI --token arg.
+  const tokenResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "gateway.auth.token", OPENCLAW_GATEWAY_TOKEN]));
+  console.log(`[gateway] config set auth.token: code=${tokenResult.code} ${tokenResult.output.trim()}`);
 
   const args = [
     "gateway",
