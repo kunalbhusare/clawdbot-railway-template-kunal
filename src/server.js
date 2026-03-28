@@ -166,10 +166,14 @@ async function startGateway() {
   if (publicDomain) {
     const originsResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.controlUi.allowedOrigins", JSON.stringify([`https://${publicDomain}`])]));
     console.log(`[gateway] config set allowedOrigins: code=${originsResult.code} ${originsResult.output.trim()}`);
-    const proxiesResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.trustedProxies", JSON.stringify(["127.0.0.1", "100.64.0.0/10", "10.0.0.0/8"])]));
+    // Trust the local wrapper proxy (127.0.0.1) per docs.openclaw.ai/gateway/trusted-proxy-auth.
+    // Docs recommend specific IPs, not CIDR ranges.
+    const proxiesResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.trustedProxies", JSON.stringify(["127.0.0.1"])]));
     console.log(`[gateway] config set trustedProxies: code=${proxiesResult.code} ${proxiesResult.output.trim()}`);
 
-    // Disable device pairing for headless Railway deployment (no local device to approve).
+    // Disable device pairing for headless Railway deployment — no local terminal to run
+    // `openclaw devices approve`. Token auth remains active as the primary gate.
+    // See docs.openclaw.ai/web/control-ui for details.
     const deviceAuthResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "gateway.controlUi.dangerouslyDisableDeviceAuth", "true"]));
     console.log(`[gateway] config set dangerouslyDisableDeviceAuth: code=${deviceAuthResult.code} ${deviceAuthResult.output.trim()}`);
   }
@@ -585,7 +589,8 @@ app.post("/setup/api/run", requireSetupAuth, async (req, res) => {
     const publicDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
     if (publicDomain) {
       await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.controlUi.allowedOrigins", JSON.stringify([`https://${publicDomain}`])]));
-      await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.trustedProxies", JSON.stringify(["100.64.0.0/10", "10.0.0.0/8"])]));
+      await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", "gateway.trustedProxies", JSON.stringify(["127.0.0.1"])]));
+      await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "gateway.controlUi.dangerouslyDisableDeviceAuth", "true"]));
     }
 
     const channelsHelp = await runCmd(OPENCLAW_NODE, clawArgs(["channels", "add", "--help"]));
