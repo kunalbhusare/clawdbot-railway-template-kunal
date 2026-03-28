@@ -188,6 +188,13 @@ async function startGateway() {
   const ceResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "plugins.slots.contextEngine", "legacy"]));
   console.log(`[gateway] config set contextEngine: code=${ceResult.code} ${ceResult.output.trim()}`);
 
+  // Set default model. Can be overridden via OPENCLAW_DEFAULT_MODEL env var.
+  const defaultModel = process.env.OPENCLAW_DEFAULT_MODEL?.trim();
+  if (defaultModel) {
+    const modelResult = await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "agents.defaults.model.primary", defaultModel]));
+    console.log(`[gateway] config set default model: code=${modelResult.code} ${modelResult.output.trim()}`);
+  }
+
   const args = [
     "gateway",
     "run",
